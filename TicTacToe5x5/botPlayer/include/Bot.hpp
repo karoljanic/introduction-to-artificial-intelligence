@@ -11,6 +11,8 @@ enum class HeuristicType {
 };
 
 class Bot {
+    static constexpr int INF = 1000;
+
     unsigned short depth;
     HeuristicType heuristic;
     bool starter;
@@ -27,11 +29,12 @@ public:
     int randomMove();
 
 private:
-    int minMax(State player, unsigned short depth, unsigned short* bestX, unsigned short* bestY);
+    int minMax(State player, unsigned short depth, unsigned short* bestMove);
+    int alphaBetaPruning(State player, unsigned short depth, unsigned short* bestMove);
 
     State getOppositePlayer(State player) const;
-    int evaluateBoard() const;
-    int successOrDefeatHeuristic() const;
+    int evaluateBoard(State player) const;
+    int successOrDefeatHeuristic(State player) const;
 };
 
 

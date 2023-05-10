@@ -18,19 +18,22 @@ Bot::Bot(unsigned short maximalDepth, HeuristicType heuristicType, bool hasFirst
     }
 
 int Bot::opponentMove(unsigned short row, unsigned short column) {
-    board.nextMove(row, column, opponentRole);
-
+    board.makeMove(row, column, opponentRole);
+    board.nextTurn();
 
     board.display(std::cout);
     return 0;
 }
 
 int Bot::move() {
-    
-    //board.nextMove(move / 10, move % 10, botRole);
+    unsigned short move;
+    minMax(botRole, depth, &move);
+
+    board.makeMove(move / 10, move % 10, botRole);
+    board.nextTurn();
     board.display(std::cout);
 
-    return 0;
+    return move;
 }
 
 int Bot::randomMove() {
@@ -39,13 +42,50 @@ int Bot::randomMove() {
 
     int move = possibleMoves[distribution(mersenneTwister)];
 
-    board.nextMove(move / 10, move % 10, botRole);
+    board.makeMove(move / 10, move % 10, botRole);
+    board.nextTurn();
     board.display(std::cout);
 
     return move;
 }
 
-int Bot::minMax(State player, unsigned short depth, unsigned short* bestX, unsigned short* bestY) {
+int Bot::minMax(State player, unsigned short depth, unsigned short* bestMove) {
+    if(depth == 0 || board.isEndState()) {
+        return evaluateBoard(player);
+    }
+
+    int bestScore;
+    if(player == botRole)
+        bestScore = -INF;
+    else
+        bestScore = INF;
+
+    for(const int& move: board.getPossibleMoves()) {
+        unsigned short x = move / 10;
+        unsigned short y = move % 10;
+
+        board.makeMove(x, y, player);
+        int score = minMax(getOppositePlayer(player), depth - 1, bestMove);
+        board.makeMove(x, y, State::EMPTY);
+
+        if(player == botRole) {
+            if(score > bestScore) {
+                bestScore = score;
+                *bestMove = move;
+            }
+        }
+        else {
+            if(score < bestScore) {
+                bestScore = score;
+                *bestMove = move;
+            }
+        }
+    }
+
+    return bestScore;
+}
+
+int Bot::alphaBetaPruning(State player, unsigned short depth, unsigned short* bestMove) {
     
 }
 
@@ -56,11 +96,22 @@ State Bot::getOppositePlayer(State player) const {
     return State::PLAYER_O;
 }
 
-int Bot::evaluateBoard() const {
+int Bot::evaluateBoard(State player) const {
     switch(heuristic) {
         case HeuristicType::SUCCESS_OR_DEFEAT:
-            return successOrDefeatHeuristic();
+            return successOrDefeatHeuristic(player);
         default:
             return 0;
     }
 }
+
+int Bot::successOrDefeatHeuristic(State player) const {
+    if(board.isWinningState(player) || board.isLosingState(getOppositePlayer(player)))
+        return 1;
+
+    if(board.isLosingState(player) || board.isWinningState(getOppositePlayer(player)))
+        return -1;
+
+    return 0;
+}
+

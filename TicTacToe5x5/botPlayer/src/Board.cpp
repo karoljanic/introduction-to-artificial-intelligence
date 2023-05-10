@@ -10,9 +10,12 @@ Board::Board():
     }
 }
 
-void Board::nextMove(unsigned short row, unsigned short col, State player) {
-    turnNumber++;
+void Board::makeMove(unsigned short row, unsigned short col, State player) {
     boardStates[row - 1][col - 1] = player;
+}
+
+void Board::nextTurn() {
+    turnNumber++;
 }
 
 bool Board::isWinningState(State player) const {

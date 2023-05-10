@@ -69,7 +69,8 @@ class Board {
 
 public:
     Board();
-    void nextMove(unsigned short row, unsigned short col, State player);
+    void makeMove(unsigned short row, unsigned short col, State player);
+    void nextTurn();
     bool isWinningState(State player) const;
     bool isLosingState(State player) const;
     bool isEndState() const;
