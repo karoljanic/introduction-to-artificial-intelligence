@@ -50,9 +50,9 @@ H_INC := $(foreach d, $(IDIR), -I$d)
 L_INC := $(foreach l, $(LIB), -l$l)
 
 ifeq ($(CXX),clang++)
-	CXXFLAGS += -Weverything -pedantic -Wno-c++98-compat
+	CXXFLAGS += -Weverything -pedantic -Wno-c++98-compat $(CFLAGS_EXTRA)
 else
-	CXXFLAGS += -Wall -Wextra -Wcast-align -Wconversion -Wunreachable-code -Wuninitialized -pedantic
+	CXXFLAGS += -Wall -Wextra -Wcast-align -Wconversion -Wunreachable-code -Wuninitialized -pedantic $(CFLAGS_EXTRA)
 endif
 
 ifeq ("$(origin O)", "command line")

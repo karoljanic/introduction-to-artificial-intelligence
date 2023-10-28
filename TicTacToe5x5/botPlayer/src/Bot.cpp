@@ -4,7 +4,15 @@ Bot::Bot(unsigned short maximalDepth, HeuristicType heuristicType, bool hasFirst
     depth{maximalDepth}, 
     heuristic{heuristicType},
     starter{hasFirstMove},
-    board{},
+    //board{Board{HybridHeuristicsWeights{100, 100, -5, 70, 100, 100, 100, 100, 0}}},
+    board{Board{HybridHeuristicsWeights{100, 511, 511, 511, 0, 0, 1, 1, 1}}},
+    mersenneTwister{time(0)} { }
+
+Bot::Bot(unsigned short maximalDepth, HeuristicType heuristicType, HybridHeuristicsWeights heuristicsWeights, bool hasFirstMove):
+    depth{maximalDepth}, 
+    heuristic{heuristicType},
+    starter{hasFirstMove},
+    board{Board{heuristicsWeights}},
     mersenneTwister{time(0)} { }
 
 Bot::Bot(Board initialBoard, unsigned short maximalDepth, HeuristicType heuristicType, bool hasFirstMove):
@@ -14,23 +22,47 @@ Bot::Bot(Board initialBoard, unsigned short maximalDepth, HeuristicType heuristi
     board{initialBoard},
     mersenneTwister{time(0)} { }
 
-int Bot::opponentMove(unsigned short row, unsigned short column) {
+void Bot::opponentMove(unsigned short row, unsigned short column) {
     board.makeMove(row, column, State::OPPONENT_MARKER, 1);
 
-    board.display(std::cout);
-    return 0;
+    //board.display(std::cout);
 }
 
 int Bot::move(AlgorithmType algorithmType) {
     MoveAndScore moveAndScore;
 
-    if(algorithmType == AlgorithmType::MIN_MAX) 
-        moveAndScore = minMax(depth, true);
-    else
-        moveAndScore = alphaBetaPruning(depth, true, INT_MIN, INT_MAX);
+    /*
+    if(board.getTurnNumber() == 0) {
+        moveAndScore.move = 33;
+    }
+    else if(board.getTurnNumber() == 1) {
+        if(board.isEmpty(3, 3)) {
+            moveAndScore.move = 33;
+        }
+        else {
+            std::uniform_int_distribution<unsigned short> distribution{0, 3};
+            unsigned short moveId = distribution(mersenneTwister);
+
+            if(moveId == 0)
+                moveAndScore.move = 23;
+            else if(moveId == 1)
+                moveAndScore.move = 43;
+            else if(moveId == 2)
+                moveAndScore.move = 32;
+            else
+                moveAndScore.move = 34;
+        }
+    }
+    else {
+        */
+        if(algorithmType == AlgorithmType::MIN_MAX) 
+            moveAndScore = minMax(depth, true);
+        else
+            moveAndScore = alphaBetaPruning(depth, true, INT_MIN, INT_MAX);
+    //}
 
     board.makeMove(moveAndScore.move / 10, moveAndScore.move % 10, State::BOT_MARKER, 1);
-    board.display(std::cout);
+    //board.display(std::cout);
 
     return moveAndScore.move;
 }
@@ -47,12 +79,25 @@ int Bot::randomMove() {
     return move;
 }
 
+int Bot::gameState() {
+    if(board.isWinningState(State::BOT_MARKER) || board.isLosingState(State::OPPONENT_MARKER))
+        return 2;
+    
+    if(board.isWinningState(State::OPPONENT_MARKER) || board.isLosingState(State::BOT_MARKER))
+        return 1;
+
+    if(board.isDrawState())
+        return 0;
+
+    return -1;
+}
+
 Bot::MoveAndScore Bot::minMax(unsigned short depth, bool isMax) {
     if(board.isWinningState(State::BOT_MARKER) || board.isLosingState(State::OPPONENT_MARKER))
-        return {0, INT_MAX};
+        return {0, INT_MAX / 2};
 
     if(board.isWinningState(State::OPPONENT_MARKER) || board.isLosingState(State::BOT_MARKER))
-        return {0, INT_MIN};
+        return {0, INT_MIN / 2};
 
     if(board.isDrawState())
         return {0, 0};
@@ -103,10 +148,10 @@ Bot::MoveAndScore Bot::minMax(unsigned short depth, bool isMax) {
 
 Bot::MoveAndScore Bot::alphaBetaPruning(unsigned short depth, bool isMax, int alpha, int beta) {
     if(board.isWinningState(State::BOT_MARKER) || board.isLosingState(State::OPPONENT_MARKER))
-        return {0, INT_MAX};
+        return {0, INT_MAX / 2};
 
     if(board.isWinningState(State::OPPONENT_MARKER) || board.isLosingState(State::BOT_MARKER))
-        return {0, INT_MIN};
+        return {0, INT_MIN / 2};
 
     if(board.isDrawState())
         return {0, 0};

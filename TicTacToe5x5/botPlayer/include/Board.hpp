@@ -15,7 +15,32 @@ enum class State {
 
 enum class HeuristicType {
     SUCCESS_OR_DEFEAT,
-    MIN_MOVES_TO_WIN
+    MIN_MOVES_TO_WIN,
+    HYBRID
+};
+
+struct HybridHeuristicComponents {
+    int movementFreedom;
+    int possibleWins;
+    int possibleOpponentLoses;
+    int winLosePositions;
+    int doubleMarkerZeroEmptyBetween;
+    int doubleMarkerOneEmptyBetween;
+    int doubleMarkerTwoEmptyBetween;
+    int tripleMarkerOneEmptyBetween;
+    int tripleMarkerTwoEmptyBetween;
+};
+
+struct HybridHeuristicsWeights { // numbers in range [0, 100]
+    int movementFreedom;
+    int possibleWins;
+    int possibleOpponentLoses;
+    int winLosePositions;
+    int doubleMarkerZeroEmptyBetween;
+    int doubleMarkerOneEmptyBetween;
+    int doubleMarkerTwoEmptyBetween;
+    int tripleMarkerOneEmptyBetween;
+    int tripleMarkerTwoEmptyBetween;
 };
 
 
@@ -74,10 +99,13 @@ class Board {
 
     State boardStates[boardSize][boardSize];
     unsigned short turnNumber;
+    HybridHeuristicsWeights hybridHeuristicsWeights;
 
 public:
     Board();
     Board(std::string states);
+    Board(State (&states)[5][5], HybridHeuristicsWeights heuristicsWeights);
+    Board(HybridHeuristicsWeights hybridHeuristicsWeights);
     void makeMove(unsigned short row, unsigned short col, State player, int turnUpdate);
     bool isWinningState(State player) const;
     bool isLosingState(State player) const;
@@ -86,10 +114,26 @@ public:
     void display(std::ostream& stream) const;
     std::vector<int> getPossibleMoves() const;
     unsigned short getTurnNumber() const;
+    bool isEmpty(unsigned int row, unsigned short col) const;
 
-    int evaluate(HeuristicType heuristic) const;
-    int successOrDefeatHeuristic() const;
-    int minMovesToWinHeuristic() const;
+    int evaluate(HeuristicType heuristic);
+    int successOrDefeatHeuristic();
+    int minMovesToWinHeuristic();
+    std::vector<int> movesToWin(State player);
+    int canBeRowWinning(unsigned short row, State bot, State opponent);
+    int canBeColWinning(unsigned short col, State bot, State opponent);
+    int canBeDiag5Winning(State* diagonal, State bot, State opponent);
+    int canBeDiag4Winning(State* diagonal, State bot, State opponent);
+    int hybridHeuristic();
+    HybridHeuristicComponents calculateHybridHeuristicComponents();
+    HybridHeuristicComponents calculateHybridHeuristicComponentsForPlayer(State player);
+    bool check4InRow(unsigned short row, State marker1, State marker2, State marker3, State marker4);
+    bool check5InRow(unsigned short row, State marker1, State marker2, State marker3, State marker4, State marker5);
+    bool check4InCol(unsigned short col, State marker1, State marker2, State marker3, State marker4);
+    bool check5InCol(unsigned short col, State marker1, State marker2, State marker3, State marker4, State marker5);
+    bool check4InDiag4(State* diagonal, State marker1, State marker2, State marker3, State marker4);
+    bool check4InDiag5(State* diagonal, State marker1, State marker2, State marker3, State marker4);
+    bool check5InDiag5(State* diagonal, State marker1, State marker2, State marker3, State marker4, State marker5);
 };
 
 #endif // BOARD_HPP

@@ -28,12 +28,14 @@ public:
 
 public:
     Bot(unsigned short maximalDepth, HeuristicType heuristicType, bool hasFirstMove);
+    Bot(unsigned short maximalDepth, HeuristicType heuristicType, HybridHeuristicsWeights heuristicsWeights, bool hasFirstMove);
     Bot(Board initialBoard, unsigned short maximalDepth, HeuristicType heuristicType, bool hasFirstMove);
     
 
-    int opponentMove(unsigned short row, unsigned short column);
+    void opponentMove(unsigned short row, unsigned short column);
     int move(AlgorithmType algorithmType);
     int randomMove();
+    int gameState();
 
 private:
     MoveAndScore minMax(unsigned short depth, bool isMax);
